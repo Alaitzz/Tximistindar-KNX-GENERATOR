@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programación ETS6 · Manual interactivo KNX</title>
+<meta name="description" content="Manual interactivo para aprender a programar direcciones de grupo en ETS6: encendidos, regulación, persianas, escenas y climatización.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-mark">M<span class="sep">/</span>G<span class="sep">/</span>X</span>
+      <div class="topbar-titles">
+        <span class="topbar-title">Programación ETS6</span>
+        <span class="topbar-sub">Manual interactivo de instalaciones KNX</span>
+      </div>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir navegación" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <nav class="tree" id="tree" aria-label="Navegación del proyecto">
+    <p class="tree-heading">Proyecto</p>
+    <ul>
+      <li><a href="#inicio" class="tree-link" data-section="inicio"><b>0</b> Inicio</a></li>
+      <li><a href="#direcciones" class="tree-link" data-section="direcciones"><b>1</b> Direcciones de grupo</a></li>
+      <li><a href="#dpt" class="tree-link" data-section="dpt"><b>2</b> Tipos de dato (DPT)</a></li>
+      <li><a href="#modulos" class="tree-link" data-section="modulos"><b>3</b> Módulos funcionales</a></li>
+      <li><a href="#pulsador" class="tree-link" data-section="pulsador"><b>4</b> Programar un pulsador</a></li>
+      <li><a href="#escenas" class="tree-link" data-section="escenas"><b>5</b> Escenas</a></li>
+      <li><a href="#clima" class="tree-link" data-section="clima"><b>6</b> Climatización</a></li>
+      <li><a href="#comprobacion" class="tree-link" data-section="comprobacion"><b>7</b> Autoevaluación</a></li>
+    </ul>
+  </nav>
+
+  <main class="content" id="content">
+
+    <!-- 0. INICIO -->
+    <section class="panel" id="inicio" data-panel>
+      <p class="eyebrow-line">ETS6 · KNX · Direcciones de grupo</p>
+      <h1>Entiende una instalación KNX leyendo su dirección de grupo</h1>
+      <p class="lede">Cada pulsador, regulador de luz o termostato de una vivienda KNX habla el mismo idioma: telegramas enviados a direcciones <code>M/G/X</code>. Este manual te enseña a leer ese idioma y a programarlo tú mismo en ETS6, con el mismo criterio que usa un integrador profesional.</p>
+
+      <div class="hero-demo" id="heroDemo" aria-hidden="false">
+        <p class="hero-demo-label">Pulsa el interruptor</p>
+        <div class="hero-switch-row">
+          <button class="hero-switch" id="heroSwitch" aria-pressed="false">
+            <span class="hero-switch-knob"></span>
+          </button>
+          <div class="hero-telegram" id="heroTelegram">
+            <span class="hero-telegram-empty">Esperando pulsación…</span>
+          </div>
+        </div>
+        <p class="hero-demo-caption">Al pulsar, el dispositivo no enciende nada directamente: envía un telegrama a una dirección de grupo. Cualquier actuador suscrito a esa dirección reacciona.</p>
+      </div>
+
+      <div class="callout-row">
+        <div class="callout">
+          <h3>Regla fundamental</h3>
+          <p>El último número de <code>M/G/X</code> identifica el circuito. No se renumera, no se compacta y no se reutiliza. Es la memoria del proyecto.</p>
+        </div>
+        <div class="callout">
+          <h3>Cómo se usa este manual</h3>
+          <p>Sigue el árbol de la izquierda en orden: direcciones → tipos de dato → módulos → casos prácticos. Cada sección construye sobre la anterior, igual que un proyecto ETS6 real.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. DIRECCIONES -->
+    <section class="panel" id="direcciones" data-panel hidden>
+      <p class="eyebrow-line">01 · Estructura de direcciones</p>
+      <h2>La dirección de grupo es una frase con tres palabras</h2>
+      <p class="lede">En ETS6, en formato de 3 niveles, una dirección de grupo se escribe <code>Principal / Medio / Sub</code>. Cada nivel acota el significado del siguiente.</p>
+
+      <div class="ga-builder" id="gaBuilder">
+        <div class="ga-slot" data-level="0">
+          <label for="gaMain">Grupo principal (M)</label>
+          <input type="number" id="gaMain" min="0" max="31" value="1">
+          <span class="ga-hint">Zona o subsistema de la vivienda</span>
+        </div>
+        <div class="ga-slot" data-level="1">
+          <label for="gaMiddle">Grupo medio (G)</label>
+          <input type="number" id="gaMiddle" min="0" max="7" value="2">
+          <span class="ga-hint">Familia de función (ON/OFF, regulación, estado…)</span>
+        </div>
+        <div class="ga-slot" data-level="2">
+          <label for="gaSub">Subgrupo (X)</label>
+          <input type="number" id="gaSub" min="0" max="255" value="7">
+          <span class="ga-hint">Circuito. Este número no cambia nunca para ese circuito</span>
+        </div>
+        <div class="ga-result">
+          <span class="ga-result-label">Dirección resultante</span>
+          <span class="ga-result-value" id="gaResultValue">1/2/07</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h3>El número final es la identidad del circuito</h3>
+          <p>Si el circuito 07 es «Luz Salón Techo», entonces cada función relacionada con ese circuito conserva el <code>07</code> aunque cambie el grupo medio:</p>
+          <table class="mini-table mono-table">
+            <tbody>
+              <tr><td>1/1/07</td><td>ON/OFF del circuito 07</td></tr>
+              <tr><td>1/2/07</td><td>Función asociada al circuito 07 (p. ej. regulación)</td></tr>
+              <tr><td>1/3/07</td><td>Otra función asociada al circuito 07 (p. ej. estado)</td></tr>
+            </tbody>
+          </table>
+          <p class="rule-note">Por eso nunca se renumera un circuito ni se reutiliza un número liberado: rompería esta correspondencia en todos los grupos medios a la vez.</p>
+        </div>
+        <div>
+          <h3>Rangos especiales del subgrupo</h3>
+          <table class="mini-table mono-table">
+            <tbody>
+              <tr><td>000–099</td><td>Elementos individuales</td></tr>
+              <tr><td>100–149</td><td>Funciones centrales / colectivas</td></tr>
+              <tr><td>150–179</td><td>Lógicas / automatismos especiales</td></tr>
+              <tr><td>180–199</td><td>Reserva del sistema</td></tr>
+            </tbody>
+          </table>
+          <p class="rule-note">Las reservas no se eliminan ni se compactan aunque estén vacías: forman parte de la metodología del proyecto.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. DPT -->
+    <section class="panel" id="dpt" data-panel hidden>
+      <p class="eyebrow-line">02 · Datapoint Types</p>
+      <h2>El DPT define qué significa el valor del telegrama</h2>
+      <p class="lede">Una dirección de grupo sin DPT es solo un número. El DPT le dice al bus si ese telegrama es un booleano, un porcentaje, una temperatura o un número de escena. No se inventa: si el objeto depende del fabricante, se marca como pendiente.</p>
+
+      <div class="filter-row" id="dptFilters">
+        <button class="chip is-active" data-filter="all">Todos</button>
+        <button class="chip" data-filter="Iluminación">Iluminación</button>
+        <button class="chip" data-filter="Clima">Clima</button>
+        <button class="chip" data-filter="Escenas">Escenas</button>
+      </div>
+
+      <table class="data-table" id="dptTable">
+        <thead>
+          <tr><th>Función</th><th>DPT</th><th>Tipo de valor</th><th>Categoría</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <p class="rule-note">Fallos, objetos de válvula o estados propios de un dispositivo concreto dependen del perfil de fabricante y no se documentan aquí como estándar.</p>
+    </section>
+
+    <!-- 3. MODULOS -->
+    <section class="panel" id="modulos" data-panel hidden>
+      <p class="eyebrow-line">03 · Módulos funcionales</p>
+      <h2>Cada tipo de circuito tiene un patrón fijo de objetos</h2>
+      <p class="lede">Un módulo es la lista de funciones que necesita un circuito para operar, separada de qué dispositivo físico las va a materializar. Primero se decide la función; después se mapea al producto.</p>
+      <div class="module-grid" id="moduleGrid"></div>
+    </section>
+
+    <!-- 4. PULSADOR -->
+    <section class="panel" id="pulsador" data-panel hidden>
+      <p class="eyebrow-line">04 · Caso práctico</p>
+      <h2>Programa un pulsador de 1 o 4 teclas</h2>
+      <p class="lede">Un pulsador no «sabe» encender ni regular nada: en ETS6 le asignas, por parámetro, qué telegrama envía cada tecla en pulsación corta y en pulsación larga. Configura las teclas y comprueba qué direcciones de grupo necesitas enlazar.</p>
+
+      <div class="sim">
+        <div class="sim-config" id="pulsadorConfig">
+          <div class="sim-config-head">
+            <label for="btnCount">Número de teclas</label>
+            <select id="btnCount">
+              <option value="1">1 tecla</option>
+              <option value="2">2 teclas</option>
+              <option value="4" selected>4 teclas</option>
+            </select>
+          </div>
+          <div id="buttonRows"></div>
+        </div>
+
+        <div class="sim-output">
+          <div class="sim-device">
+            <p class="sim-device-label">Pulsador · circuito 1/2/03 salón</p>
+            <div class="sim-device-buttons" id="deviceButtons"></div>
+            <p class="sim-device-hint">Toque = pulsación corta · mantén pulsado = pulsación larga</p>
+          </div>
+          <div class="telegram-log" id="pulsadorLog">
+            <p class="telegram-log-empty">Los telegramas enviados aparecerán aquí</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ga-table-wrap">
+        <p class="ga-table-label">Direcciones de grupo necesarias con esta configuración</p>
+        <table class="data-table mono-table" id="pulsadorGaTable">
+          <thead><tr><th>Dirección</th><th>Objeto</th><th>DPT</th><th>Circuito</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. ESCENAS -->
+    <section class="panel" id="escenas" data-panel hidden>
+      <p class="eyebrow-line">05 · Caso práctico</p>
+      <h2>Una escena no crea una dirección por cada aparato</h2>
+      <p class="lede">Una escena es un número (DPT 18.001) enviado a una única dirección de grupo. Cada actuador que participa en la escena ya está enlazado a esa dirección y tiene almacenado, en su propio parámetro, el valor que debe adoptar cuando llega ese número.</p>
+
+      <div class="scene-builder">
+        <div class="scene-config">
+          <label for="sceneNumber">Número de escena a programar</label>
+          <input type="range" id="sceneNumber" min="1" max="8" value="1">
+          <span class="scene-number-display" id="sceneNumberDisplay">Escena 1 · «Buenas noches»</span>
+
+          <div id="sceneMembers"></div>
+        </div>
+
+        <div class="scene-recall">
+          <p class="ga-table-label">Dirección de control de escena</p>
+          <div class="ga-result" style="margin-bottom:16px">
+            <span class="ga-result-label">1/4/01</span>
+            <span class="ga-result-value" style="font-size:15px">DPT 18.001 — Control de escena</span>
+          </div>
+          <button class="btn-recall" id="sceneRecallBtn">Evocar escena</button>
+          <div class="telegram-log" id="sceneLog">
+            <p class="telegram-log-empty">Evoca la escena para ver el telegrama y cómo reacciona cada actuador</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CLIMA -->
+    <section class="panel" id="clima" data-panel hidden>
+      <p class="eyebrow-line">06 · Caso práctico</p>
+      <h2>Suelo radiante y climatización por zonas</h2>
+      <p class="lede">UFH_ZONE (suelo radiante) y HVAC_ZONE (aire acondicionado) comparten estructura: habilitación, temperatura ambiente, consigna, modo y demanda. Lo que cambia entre fabricantes es el objeto de demanda/válvula y el de fallo, que nunca se documentan por adelantado.</p>
+
+      <div class="climate-tabs">
+        <button class="chip is-active" data-climate="ufh">Suelo radiante · UFH_ZONE</button>
+        <button class="chip" data-climate="hvac">Aire acondicionado · HVAC_ZONE</button>
+      </div>
+
+      <div class="climate-panel" id="climatePanel"></div>
+    </section>
+
+    <!-- 7. COMPROBACION -->
+    <section class="panel" id="comprobacion" data-panel hidden>
+      <p class="eyebrow-line">07 · Autoevaluación</p>
+      <h2>Comprueba lo que has entendido</h2>
+      <p class="lede">Seis preguntas cortas sobre lo visto en las secciones anteriores. No hay penalización por fallar: es para detectar qué repasar.</p>
+      <div id="quiz" class="quiz"></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
